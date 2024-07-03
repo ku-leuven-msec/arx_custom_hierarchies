@@ -26,11 +26,8 @@ import org.deidentifier.arx.AttributeType.Hierarchy;
 import org.deidentifier.arx.DataType;
 import org.deidentifier.arx.DataType.ARXDate;
 import org.deidentifier.arx.DataType.DataTypeWithRatioScale;
-import org.deidentifier.arx.aggregates.HierarchyBuilder;
+import org.deidentifier.arx.aggregates.*;
 import org.deidentifier.arx.aggregates.HierarchyBuilder.Type;
-import org.deidentifier.arx.aggregates.HierarchyBuilderIntervalBased;
-import org.deidentifier.arx.aggregates.HierarchyBuilderOrderBased;
-import org.deidentifier.arx.aggregates.StatisticsFrequencyDistribution;
 import org.deidentifier.arx.gui.Controller;
 import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.impl.wizard.ARXWizardDialog.ARXWizardButton;
@@ -118,6 +115,8 @@ public class HierarchyWizard<T> extends ARXWizard<HierarchyWizardResult<T>> {
     /** Var. */
     private final ARXWizardButton           buttonSave;
 
+    private HierarchyWizardPageCustom<T> pageCustom;
+
     /** Var. */
     private HierarchyWizardPageDate         pageDate;
     
@@ -169,7 +168,7 @@ public class HierarchyWizard<T> extends ARXWizard<HierarchyWizardResult<T>> {
         }
         
         // Store
-        this.model = new HierarchyWizardModel<T>(datatype, locale, items, frequency);
+        this.model = new HierarchyWizardModel<T>(datatype, locale, items, frequency, controller);
         this.controller = controller;
         
         // Parse given builder, if needed
@@ -179,7 +178,7 @@ public class HierarchyWizard<T> extends ARXWizard<HierarchyWizardResult<T>> {
             }
         } catch (Exception e){ 
             /* Die silently, and recover*/
-            this.model = new HierarchyWizardModel<T>(datatype, locale, items, frequency);
+            this.model = new HierarchyWizardModel<T>(datatype, locale, items, frequency, controller);
         }
         
         // Initialize window
@@ -223,10 +222,15 @@ public class HierarchyWizard<T> extends ARXWizard<HierarchyWizardResult<T>> {
         } else {
             pageDate = null;
         }
+        if (model.getCustomModel() != null){
+            pageCustom = new HierarchyWizardPageCustom<T>(this,controller, model, pageFinal);
+        } else{
+            pageCustom = null;
+        }
         pageOrder = new HierarchyWizardPageOrder<T>(controller, this, model, pageFinal);
         pageRedaction = new HierarchyWizardPageRedaction<T>(controller, this, model, pageFinal);
         pagePriority = new HierarchyWizardPagePriority<T>(controller, this, model, pageFinal);
-        pageType = new HierarchyWizardPageType<T>(this, model, pageIntervals, pageOrder, pageRedaction, pageDate, pagePriority);
+        pageType = new HierarchyWizardPageType<T>(this, model, pageIntervals, pageOrder, pageRedaction, pageDate, pagePriority, pageCustom);
     }
     
     @Override
@@ -242,6 +246,9 @@ public class HierarchyWizard<T> extends ARXWizard<HierarchyWizardResult<T>> {
         }
         if (pageDate != null) {
             addPage(pageDate);
+        }
+        if (pageCustom != null){
+            addPage(pageCustom);
         }
     }
 
@@ -349,6 +356,12 @@ public class HierarchyWizard<T> extends ARXWizard<HierarchyWizardResult<T>> {
             this.model.setType(Type.PRIORITY_BASED);
             this.pageType.updatePage();
             this.getContainer().showPage(pagePriority);
+            break;
+        case CUSTOM_BASED:
+            this.pageCustom.updatePage();
+            this.model.setType(Type.CUSTOM_BASED);
+            this.pageType.updatePage();
+            this.getContainer().showPage(pageCustom);
             break;
         }
     }

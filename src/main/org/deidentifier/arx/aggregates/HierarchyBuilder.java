@@ -56,7 +56,10 @@ public abstract class HierarchyBuilder<T> implements Serializable {
         DATE_BASED("Date"),
         
         /**  Priority-based hierarchy */
-        PRIORITY_BASED("Priority");
+        PRIORITY_BASED("Priority"),
+
+        /** Custom-based hierarchy */
+        CUSTOM_BASED("Custom");
         
         /** Name*/
         private final String name;

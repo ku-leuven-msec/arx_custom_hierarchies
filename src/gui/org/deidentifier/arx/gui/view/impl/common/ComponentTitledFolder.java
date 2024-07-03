@@ -456,7 +456,8 @@ public class ComponentTitledFolder implements IComponent {
                                                                                     Resources.getMessage("ComponentTitledFolder.0"), //$NON-NLS-1$
                                                                                     Resources.getMessage("ComponentTitledFolder.1"), //$NON-NLS-1$
                                                                                     getAllHideableItems(),
-                                                                                    getVisibleItems());
+                                                                                    getVisibleItems(),
+                                                                                    false);
                     
                     if (result != null) {
                         setVisibleItems(result);
