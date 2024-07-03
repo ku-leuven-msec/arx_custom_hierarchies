@@ -111,7 +111,7 @@
                 <fileset refid="lib.jars" />
                 <fileset refid="gui.jars" />
                 <fileset refid="test.jars" />
-                <path path="lib/ant/eclipse/org.eclipse.swt.gtk.linux.x86_64_3.114.100.v20200604-0951.jar" />
+                <path path="lib/ant/eclipse/org.eclipse.swt.win32.win32.x86_64_3.114.100.v20200604-0951.jar" />
             </classpath>
         </javac>
 
@@ -146,7 +146,7 @@
                 <path path="lib/ant/log4j/log4j-api-2.17.2.jar" />
                 <path path="lib/ant/log4j/log4j-core-2.17.2.jar" />
                 <path path="lib/ant/sqlite/sqlite-jdbc-3.7.2.jar" />
-            	<path path="lib/ant/eclipse/org.eclipse.swt.gtk.linux.x86_64_3.114.100.v20200604-0951.jar" />
+            	<path path="lib/ant/eclipse/org.eclipse.swt.win32.win32.x86_64_3.114.100.v20200604-0951.jar" />
             </classpath>
             <batchtest todir="build/junitReports">
                 <fileset dir="src/test/">
@@ -185,7 +185,7 @@
                 <path path="lib/ant/log4j/log4j-api-2.17.2.jar" />
                 <path path="lib/ant/log4j/log4j-core-2.17.2.jar" />
                 <path path="lib/ant/sqlite/sqlite-jdbc-3.7.2.jar" />
-            	<path path="lib/ant/eclipse/org.eclipse.swt.gtk.linux.x86_64_3.114.100.v20200604-0951.jar" />
+            	<path path="lib/ant/eclipse/org.eclipse.swt.win32.win32.x86_64_3.114.100.v20200604-0951.jar" />
             </classpath>
             <batchtest todir="build/junitReports" fork="yes">
                 <fileset dir="src/test/" includes="**/Test*.java" />
@@ -273,7 +273,7 @@
             <classpath>
                 <fileset refid="lib.jars" />
                 <fileset refid="gui.jars" />
-            	<path path="lib/ant/eclipse/org.eclipse.swt.gtk.linux.x86_64_3.114.100.v20200604-0951.jar" />
+            	<path path="lib/ant/eclipse/org.eclipse.swt.win32.win32.x86_64_3.114.100.v20200604-0951.jar" />
                 <path path="src/main" />
             </classpath>
 
@@ -302,7 +302,7 @@
             <classpath>
                 <fileset refid="lib.jars" />
                 <fileset refid="gui.jars" />
-            	<path path="lib/ant/eclipse/org.eclipse.swt.gtk.linux.x86_64_3.114.100.v20200604-0951.jar" />
+            	<path path="lib/ant/eclipse/org.eclipse.swt.win32.win32.x86_64_3.114.100.v20200604-0951.jar" />
                 <path path="src/main" />
             </classpath>
         </javac>
