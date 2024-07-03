@@ -18,6 +18,7 @@
 package org.deidentifier.arx.gui.view.impl.menu;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.deidentifier.arx.gui.resources.Resources;
@@ -51,6 +52,8 @@ public class DialogMultiSelection extends TitleAreaDialog implements IDialog {
 
     /** Widget. */
     private Button ok          = null;
+    private Button up = null;
+    private Button down = null;
     
     /** Elements*/
     private List<String> elements = new ArrayList<String>();
@@ -63,6 +66,8 @@ public class DialogMultiSelection extends TitleAreaDialog implements IDialog {
     
     /** Constant*/
     private final String message;
+
+    private final boolean isCustom;
     
     /**
      * Creates a new instance.
@@ -73,12 +78,14 @@ public class DialogMultiSelection extends TitleAreaDialog implements IDialog {
                              final String title,
                              final String message,
                              final List<String> elements,
-                             final List<String> selected) {
+                             final List<String> selected,
+                             final boolean isCustom) {
         super(parent);
         this.title = title;
         this.message = message;
         this.elements = new ArrayList<String>(elements);
         this.selected = new ArrayList<String>(selected);
+        this.isCustom = isCustom;
     }
 
     @Override
@@ -143,15 +150,74 @@ public class DialogMultiSelection extends TitleAreaDialog implements IDialog {
     
     @Override
     protected Control createDialogArea(final Composite parent) {
-        parent.setLayout(SWTUtil.createGridLayout(1));
+        parent.setLayout(SWTUtil.createGridLayout(2));
         final Table table = new Table(parent, SWT.CHECK | SWT.BORDER | SWT.V_SCROLL);
-        
+        final  Button up = new Button(parent,SWT.PUSH);
+        up.setText("Move up");
+        final  Button down = new Button(parent,SWT.PUSH);
+        down.setText("Move down");
         for (String element : this.elements) {
             TableItem item = new TableItem(table, SWT.NONE);
             item.setText(element);
             item.setChecked(this.selected.contains(element));
         }
-        
+        if (isCustom){
+            up.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent arg0) {
+                    int amountOFItems = table.getItemCount();
+                    List<TableItem> itemList = new ArrayList<>(Arrays.asList(table.getItems()));
+                    for (int i = 0; i < amountOFItems; i++) {
+                        if (itemList.get(i).getChecked()){
+                            if (i != 0){
+                                if (!itemList.get(i-1).getChecked()){
+                                    String temp = itemList.get(i-1).getText();
+                                    itemList.get(i-1).setText(itemList.get(i).getText());
+                                    itemList.get(i).setText(temp);
+                                    itemList.get(i).setChecked(false);
+                                    itemList.get(i-1).setChecked(true);
+                                }
+                            }
+                        }
+                    }
+                    selected = new ArrayList<>();
+                    for (TableItem t : table.getItems()) {
+                        if (t.getChecked()){
+                            selected.add(t.getText());
+                        }
+                    }
+                }
+            });
+            down.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent arg0) {
+                    int amountOFItems = table.getItemCount();
+
+                    List<TableItem> itemList = new ArrayList<>(Arrays.asList(table.getItems()));
+
+                    for (int i = amountOFItems-1; i > -1; i--) {
+                        if (itemList.get(i).getChecked()){
+                            if (i != amountOFItems-1){
+                                if (!itemList.get(i+1).getChecked()){
+                                    String temp = itemList.get(i+1).getText();
+                                    itemList.get(i+1).setText(itemList.get(i).getText());
+                                    itemList.get(i).setText(temp);
+                                    itemList.get(i).setChecked(false);
+                                    itemList.get(i+1).setChecked(true);
+                                }
+                            }
+                        }
+                    }
+                    selected = new ArrayList<>();
+                    for (TableItem t : table.getItems()) {
+                        if (t.getChecked()){
+                            selected.add(t.getText());
+                        }
+                    }
+                }
+            });
+        }
+
         table.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
                 if (event.detail == SWT.CHECK) {
@@ -164,11 +230,25 @@ public class DialogMultiSelection extends TitleAreaDialog implements IDialog {
                         }
                     }
                 }
+                if (isCustom){
+                    selected = new ArrayList<>();
+                    for (TableItem t : table.getItems()) {
+                        if (t.getChecked()){
+                            selected.add(t.getText());
+                        }
+                    }
+                }
             }
         });
-        
-        table.setLayoutData(SWTUtil.createFillGridData());
-        
+        GridData gridDataTable = new GridData();
+        gridDataTable.horizontalAlignment = GridData.FILL;
+        gridDataTable.horizontalSpan = 2;
+        table.setLayoutData(gridDataTable);
+        GridData gridDataButtonUp = new GridData();
+        gridDataButtonUp.horizontalAlignment = GridData.GRAB_HORIZONTAL;
+        gridDataButtonUp.horizontalSpan = 1;
+        up.setLayoutData(gridDataButtonUp);
+        down.setLayoutData(gridDataButtonUp);
         return parent;
     }
 

@@ -21,6 +21,9 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -123,6 +126,10 @@ public class ImportWizardPageCSV extends WizardPage {
             return ((String[]) element)[index];
         }
     }
+    private Button mergeButton;
+    private Combo mergeDelimiterCombo;
+    private Label mergeDelimiterComboLabel;
+
 
     /** Reference to the wizard containing this page. */
     private ImportWizard                       wizardImport;
@@ -325,6 +332,9 @@ public class ImportWizardPageCSV extends WizardPage {
                 comboCharset.setVisible(true);
                 comboEscape.setVisible(true);
                 btnContainsHeader.setVisible(true);
+                mergeDelimiterCombo.setVisible(true);
+                mergeDelimiterComboLabel.setVisible(true);
+                mergeButton.setVisible(true);
                 customDelimiter = false;
                 customLinebreak = false;
                 evaluatePage();
@@ -348,7 +358,7 @@ public class ImportWizardPageCSV extends WizardPage {
             public void widgetSelected(SelectionEvent arg0) {
 
                 /* Open file dialog */
-                final String path = wizardImport.getController().actionShowOpenFileDialog(getShell(), 
+                final String path = wizardImport.getController().actionShowOpenFileDialog(getShell(),
                                                                                           "*.csv"); //$NON-NLS-1$
                 if (path == null) {
                     return;
@@ -563,6 +573,43 @@ public class ImportWizardPageCSV extends WizardPage {
 
         /* Actual table for {@link #tableViewerPreview} */
         tablePreview = tableViewerPreview.getTable();
+
+        mergeDelimiterComboLabel = new Label(container, SWT.NONE);
+        mergeDelimiterComboLabel.setVisible(false);
+        mergeDelimiterComboLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        mergeDelimiterComboLabel.setText("Delimiter"); //$NON-NLS-1$
+
+        /* Delimiter combobox */
+        mergeDelimiterCombo = new Combo(container, SWT.READ_ONLY);
+        mergeDelimiterCombo.setVisible(false);
+
+        /* Add labels */
+        for (final String s : labels) {
+            mergeDelimiterCombo.add(s);
+        }
+
+        mergeDelimiterCombo.select(selectedDelimiter);
+        mergeDelimiterCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+        mergeButton = new Button(container, SWT.NONE);
+        mergeButton.setText("Merge columns");
+        mergeButton.setVisible(false);
+        mergeButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        mergeButton.addSelectionListener(new SelectionAdapter() {
+
+
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                List<String> attr = new ArrayList<>();
+                for (int i =0; i < tablePreview.getColumnCount(); i++){
+                    attr.add(tablePreview.getColumn(i).getText());
+                }
+                List<String> attributes = wizardImport.getController().getSelectedAttributes("Select attributes you want to combine","These attributes will be combined into one column, split by \"" + mergeDelimiterCombo.getItem(mergeDelimiterCombo.getSelectionIndex()) + "\"",true,attr);
+                int index = mergeDelimiterCombo.getSelectionIndex();
+                changeImportFile(attributes, mergeDelimiterCombo.getItem(index), comboDelimiter.getItem(comboDelimiter.getSelectionIndex()),tablePreview.getColumnCount());
+
+            }
+        });
         GridData gdTablePreview = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1);
         gdTablePreview.heightHint = 150;
         tablePreview.setLayoutData(gdTablePreview);
@@ -571,6 +618,123 @@ public class ImportWizardPageCSV extends WizardPage {
 
         /* Set page to incomplete by default */
         setPageComplete(false);
+    }
+
+    private void changeImportFile(List<String> selectedAttributes, String columnDelimiterCustom, String delimiter, int amountOfAttributes){
+        if (selectedAttributes != null){
+            if (selectedAttributes.size()>0){
+                String[] firstLine = new String[ amountOfAttributes- selectedAttributes.size() + 1];
+                int[] newColumnIndexGuide = new int[amountOfAttributes];
+                String file = comboLocation.getText();
+                String[] fileSplit = comboLocation.getText().split("");
+                List<String[]> content = new ArrayList<>();
+                List<String> newLines = new ArrayList<>();
+                List<Integer> toIgnoreColumns = new ArrayList<>();
+                boolean start = true;
+                try(BufferedReader br = new BufferedReader(new FileReader(file))) {
+                    String line = "";
+                    while ((line = br.readLine()) != null) {
+                        String toAddString = "";
+                        String[] row = line.split(delimiter);
+
+                        if (start){
+                            for (int i = 0; i < row.length; i++) {
+                                if (selectedAttributes.contains(row[i])){
+                                    toIgnoreColumns.add(i);
+                                    newColumnIndexGuide[i] = selectedAttributes.indexOf(row[i]);
+                                }
+                            }
+                        }
+                        start = false;
+                        int counter = 0;
+                        String[] newColumn = new String[selectedAttributes.size()];
+                        String[] newData = new String[firstLine.length];
+                        if (row.length > 0){
+                            for (int i = 0; i < row.length; i++){
+                                if (!toIgnoreColumns.contains(i)){
+                                    if (row[i] == "" || row[i] == null){
+                                        System.out.println();
+                                    }
+                                    newData[counter] = row[i];
+                                    toAddString += row[i] + delimiter;
+                                    counter++;
+                                }
+                                else{
+                                    if (newColumnIndexGuide[i] == selectedAttributes.size()-1){
+                                        newColumn[newColumnIndexGuide[i]] = row[i];
+                                    }
+                                    else{
+                                        newColumn[newColumnIndexGuide[i]] = row[i] + columnDelimiterCustom;
+                                    }
+                                }
+                            }
+                        }
+                        else{
+                            for (int i =0; i < newColumn.length;i++){
+                                if (i == newColumn.length-1){
+                                    newData[i] = "";
+                                    toAddString += "";
+                                }
+                                else{
+                                    newData[i] = "";
+                                    toAddString += "" + delimiter;
+                                }
+                            }
+                        }
+
+                        String newColumnString = "";
+                        for (int i = 0; i < newColumn.length; i++) {
+                            newColumnString += newColumn[i];
+                        }
+                        newData[newData.length-1] = newColumnString;
+                        toAddString += newColumnString;
+                        newLines.add(toAddString);
+                        content.add(newData);
+                    }
+                } catch (IOException e) {
+                    //Some error logging
+                }
+                String fileLocationRemastered = "";
+                for (String s : fileSplit) {
+                    if (s.equals("\\")){
+                        fileLocationRemastered += "/";
+                    }
+                    else{
+                        fileLocationRemastered+= s;
+                    }
+                }
+                String[] fileLocationSplit = fileLocationRemastered.split("/");
+                String fileName = fileLocationSplit[fileLocationSplit.length-1];
+                String[] splitFileName = fileName.split("\\.");
+                for (String attr : selectedAttributes) {
+                    splitFileName[0] += "_" + attr;
+                }
+                splitFileName[0] += ".csv";
+                String saveLocation = "";
+                for (int i = 0; i < fileLocationSplit.length;i++){
+                    if (i != fileLocationSplit.length-1){
+                        saveLocation += fileLocationSplit[i] + "/";
+                    }
+                    else{
+                        saveLocation += splitFileName[0];
+                    }
+                }
+                try{
+                    FileWriter filewriter = new FileWriter(saveLocation);
+                    PrintWriter write = new PrintWriter(filewriter);
+                    for (String name: newLines){
+                        write.println(name);
+                    }
+                    write.close();
+                    comboLocation.add(saveLocation);
+                    comboLocation.select(comboLocation.indexOf(saveLocation));
+                    evaluatePage();
+                }
+                catch(IOException exe){
+                    System.out.println("Cannot create file");
+                }
+            }
+        }
     }
     
     /**

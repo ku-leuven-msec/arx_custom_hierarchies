@@ -1834,8 +1834,12 @@ public class Controller implements IView {
      * @param selected
      * @return
      */
-    public List<String> actionShowMultiSelectionDialog(Shell shell, String title, String text, List<String> elements, List<String> selected) {
-        return main.showMultiSelectionDialog(shell, title, text, elements, selected);
+    public List<String> actionShowMultiSelectionDialog(Shell shell, String title, String text, List<String> elements, List<String> selected, boolean isCustom) {
+        return main.showMultiSelectionDialog(shell, title, text, elements, selected, isCustom);
+    }
+
+    public List<String> getSelectedAttributes(String title, String text, boolean isCustom, List<String> attr){
+        return main.showMultiSelectionDialog(main.getShell(), title, text,attr, new ArrayList<>(),isCustom);
     }
 
     /**

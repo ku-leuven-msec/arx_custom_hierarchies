@@ -53,9 +53,15 @@ public class HierarchyWizardPageType<T> extends WizardPage {
 
     /** Var. */
     private Button                                priority;
-    
+
+    /** Var. */
+    private Button                               custom;
+
     /** Var. */
     private IWizardPage                           next;
+    
+    /** Var. */
+    private final HierarchyWizardPageCustom<T> customPage;
 
     /** Var. */
     private final HierarchyWizardPageIntervals<T> intervalPage;
@@ -92,7 +98,8 @@ public class HierarchyWizardPageType<T> extends WizardPage {
                                    final HierarchyWizardPageOrder<T> orderPage,
                                    final HierarchyWizardPageRedaction<T> redactionPage,
                                    final HierarchyWizardPageDate datePage,
-                                   final HierarchyWizardPagePriority<T> priorityPage) {
+                                   final HierarchyWizardPagePriority<T> priorityPage,
+                                   final HierarchyWizardPageCustom<T> customPage) {
         
         super(""); //$NON-NLS-1$
         this.wizard = wizard;
@@ -103,6 +110,7 @@ public class HierarchyWizardPageType<T> extends WizardPage {
         this.priorityPage = priorityPage;
         this.model = model;
         this.next = intervalPage;
+        this.customPage = customPage;
         setTitle(Resources.getMessage("HierarchyWizardPageType.0")); //$NON-NLS-1$
         setDescription(Resources.getMessage("HierarchyWizardPageType.1")); //$NON-NLS-1$
         setPageComplete(true);
@@ -138,6 +146,10 @@ public class HierarchyWizardPageType<T> extends WizardPage {
         this.priority = new Button(composite, SWT.RADIO);
         this.priority.setText(Resources.getMessage("HierarchyWizardPageType.6")); //$NON-NLS-1$
         this.priority.setEnabled(true);
+
+        this.custom = new Button(composite, SWT.RADIO);
+        this.custom.setText(Resources.getMessage("HierarchyWizardPageType.7")); //$NON-NLS-1$
+        this.custom.setEnabled(true);
 
         this.date.addSelectionListener(new SelectionAdapter(){
             @Override public void widgetSelected(SelectionEvent arg0) {
@@ -183,19 +195,31 @@ public class HierarchyWizardPageType<T> extends WizardPage {
                 }
             }
         });
+
+        this.custom.addSelectionListener(new SelectionAdapter(){
+            @Override public void widgetSelected(SelectionEvent arg0) {
+                if (custom.getSelection()) {
+                    next = customPage;
+                    model.setType(Type.CUSTOM_BASED);
+                }
+            }
+        });
+
         
         date.setSelection(model.getType() == Type.DATE_BASED);
         interval.setSelection(model.getType() == Type.INTERVAL_BASED);
         order.setSelection(model.getType() == Type.ORDER_BASED);
         redaction.setSelection(model.getType() == Type.REDACTION_BASED);
         priority.setSelection(model.getType() == Type.PRIORITY_BASED);
+        custom.setSelection(model.getType() == Type.CUSTOM_BASED);
         
         switch (model.getType()){
         case DATE_BASED:      next = datePage;      break;
         case INTERVAL_BASED:  next = intervalPage;  break;
         case ORDER_BASED:     next = orderPage;     break;
         case REDACTION_BASED: next = redactionPage; break;
-        case PRIORITY_BASED:  next = priorityPage; break;
+        case PRIORITY_BASED:  next = priorityPage;  break;
+        case CUSTOM_BASED:    next = customPage;    break;
         default:
             throw new IllegalStateException("Unknown type of builder"); //$NON-NLS-1$
         }
@@ -234,12 +258,14 @@ public class HierarchyWizardPageType<T> extends WizardPage {
         redaction.setSelection(model.getType() == Type.REDACTION_BASED);
         date.setSelection(model.getType() == Type.DATE_BASED);
         priority.setSelection(model.getType() == Type.PRIORITY_BASED);
+        custom.setSelection(model.getType() == Type.CUSTOM_BASED);
         switch (model.getType()){
             case INTERVAL_BASED:  next = intervalPage;  break;
             case ORDER_BASED:     next = orderPage;     break;
             case REDACTION_BASED: next = redactionPage; break;
             case DATE_BASED:      next = datePage;      break;
             case PRIORITY_BASED:  next = priorityPage;  break;
+            case CUSTOM_BASED:    next = customPage;    break;
         }
     }
 }

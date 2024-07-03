@@ -622,10 +622,11 @@ public class MainWindow implements IView {
                                                  String title,
                                                  String text,
                                                  List<String> elements,
-                                                 List<String> selected) {
+                                                 List<String> selected,
+                                                 boolean isCustom) {
 
         // Open dialog
-        DialogMultiSelection dlg = new DialogMultiSelection(shell, title, text, elements, selected);
+        DialogMultiSelection dlg = new DialogMultiSelection(shell, title, text, elements, selected, isCustom);
         if (dlg.open() == Window.OK) {
             return dlg.getSelectedItems();
         } else {
